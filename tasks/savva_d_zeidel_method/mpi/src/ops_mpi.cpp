@@ -59,7 +59,6 @@ bool SavvaDZeidelMPI::RunImpl() {
   int *counts2 = new int[size]();
   int *displacements2 = new int[size]();
 
-
   int n = 0;
 
   if (rank == 0) {
@@ -104,8 +103,6 @@ bool SavvaDZeidelMPI::RunImpl() {
   MPI_Scatterv(global_data_b, counts2, displacements2, MPI_DOUBLE, local_data_b, local_rows, MPI_DOUBLE, 0,
                MPI_COMM_WORLD);
 
-
-
   auto &x = GetOutput();
 
   for (int iter = 0; iter < 1000; ++iter) {
@@ -126,8 +123,7 @@ bool SavvaDZeidelMPI::RunImpl() {
       x[index] = x_actual;
     }
 
-    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, x.data(), counts2, displacements2, MPI_DOUBLE,
-                   MPI_COMM_WORLD);
+    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, x.data(), counts2, displacements2, MPI_DOUBLE, MPI_COMM_WORLD);
 
     double global_max_error = 0.0;
     MPI_Allreduce(&local_max_error, &global_max_error, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
@@ -136,7 +132,6 @@ bool SavvaDZeidelMPI::RunImpl() {
       break;
     }
   }
-
 
   delete[] counts;
   delete[] displacements;
@@ -148,7 +143,6 @@ bool SavvaDZeidelMPI::RunImpl() {
   MPI_Barrier(MPI_COMM_WORLD);
   return true;
 }
-
 
 bool SavvaDZeidelMPI::PostProcessingImpl() {
   return true;

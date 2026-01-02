@@ -72,7 +72,6 @@ class SavvaDZeidelPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType>
 
 // Тест на производительность
 TEST_P(SavvaDZeidelPerfTest, RunPerfModes) {
-
   ExecuteTest(GetParam());  // pipeline (SEQ или MPI)
 }
 

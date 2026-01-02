@@ -16,7 +16,7 @@ SavvaDZeidelSEQ::SavvaDZeidelSEQ(const InType &in) {
 
 bool SavvaDZeidelSEQ::ValidationImpl() {
   const auto &in = GetInput();
-  
+
   if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n * in.n) || in.b.size() != static_cast<size_t>(in.n)) {
     return false;
   }

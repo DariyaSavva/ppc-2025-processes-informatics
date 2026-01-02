@@ -80,7 +80,6 @@ const SeidelInput param6{
 const OutType vec6{-3082820798382051.0 / 12480150365419456.0, 2481857355488935.0 / 6240075182709728.0,
                    -8818834781200853.0 / 64107151648602824.0};
 
-
 const std::array<TestType, 6> kTestParam = {std::make_tuple(param1, vec1, "empty_system"),
                                             std::make_tuple(param2, vec2, "single_equation"),
                                             std::make_tuple(param3, vec3, "two_by_two_system"),
@@ -88,10 +87,10 @@ const std::array<TestType, 6> kTestParam = {std::make_tuple(param1, vec1, "empty
                                             std::make_tuple(param5, vec5, "four_by_four_fractional"),
                                             std::make_tuple(param6, vec6, "three_by_three_negative_fractional")};
 
-
 // не изменяется (определяет какие тесты будем запускать - сек и мпай )
-const auto kTestTasksList = std::tuple_cat(
-               ppc::util::AddFuncTask<SavvaDZeidelSEQ, InType>(kTestParam, PPC_SETTINGS_savva_d_zeidel_method), ppc::util::AddFuncTask<SavvaDZeidelMPI, InType>(kTestParam, PPC_SETTINGS_savva_d_zeidel_method));
+const auto kTestTasksList =
+    std::tuple_cat(ppc::util::AddFuncTask<SavvaDZeidelSEQ, InType>(kTestParam, PPC_SETTINGS_savva_d_zeidel_method),
+                   ppc::util::AddFuncTask<SavvaDZeidelMPI, InType>(kTestParam, PPC_SETTINGS_savva_d_zeidel_method));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
@@ -100,6 +99,6 @@ const auto kPerfTestName = SavvaDZeidelFuncTests::PrintFuncTestName<SavvaDZeidel
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, SavvaDZeidelFuncTests, kGtestValues,
                          kPerfTestName);  // здесь запуск тестов
 
-}
+}  // namespace
 
-}
+}  // namespace savva_d_zeidel_method
