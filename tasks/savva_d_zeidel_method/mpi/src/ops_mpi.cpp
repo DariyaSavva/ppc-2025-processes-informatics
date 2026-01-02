@@ -104,6 +104,7 @@ bool SavvaDZeidelMPI::RunImpl() {
                MPI_COMM_WORLD);
 
   auto &x = GetOutput();
+  x.assign(n, 0.0);
 
   for (int iter = 0; iter < 1000; ++iter) {
     double local_max_error = 0.0;
