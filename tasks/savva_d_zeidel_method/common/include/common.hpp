@@ -9,9 +9,9 @@
 namespace savva_d_zeidel_method {
 
 struct SeidelInput {
-  int n;
-  std::vector<double> a;
-  std::vector<double> b;
+  int n = 0;
+  std::vector<double> a{};
+  std::vector<double> b{};
 };
 
 using InType = SeidelInput;
