@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -15,6 +16,15 @@
 #include "util/include/util.hpp"
 
 namespace savva_d_zeidel_method {
+
+std::ostream &operator<<(std::ostream &os, const TestType &test_param) {
+  const auto &in = std::get<0>(test_param);
+  const auto &out = std::get<1>(test_param);
+  const auto &name = std::get<2>(test_param);
+  os << "Test[" << name << ", n=" << in.n << ", a.size=" << in.a.size() << ", b.size=" << in.b.size()
+     << ", out.size=" << out.size() << "]";
+  return os;
+}
 
 class SavvaDZeidelFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
   // тест один общий
