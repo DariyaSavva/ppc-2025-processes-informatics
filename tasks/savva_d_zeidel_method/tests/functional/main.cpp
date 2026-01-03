@@ -17,6 +17,8 @@
 
 namespace savva_d_zeidel_method {
 
+std::ostream &operator<<(std::ostream &os, const TestType &test_param);
+
 std::ostream &operator<<(std::ostream &os, const TestType &test_param) {
   const auto &in = std::get<0>(test_param);
   const auto &out = std::get<1>(test_param);
