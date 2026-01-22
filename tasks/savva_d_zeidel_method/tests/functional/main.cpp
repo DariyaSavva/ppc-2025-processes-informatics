@@ -71,8 +71,8 @@ TEST_P(SavvaDZeidelFuncTests, MatmulFromPic) {  // не изменяется в�
   ExecuteTest(GetParam());
 }
 
-//const SeidelInput param1{0, {}, {}};
-//const OutType vec1{};
+// const SeidelInput param1{0, {}, {}};
+// const OutType vec1{};
 
 const SeidelInput param2{1, {2.0}, {4.0}};
 const OutType vec2{2.0};
@@ -99,13 +99,11 @@ static const double v6_2 = -8818834781200853.0 / 64107151648602824.0;
 const SeidelInput param6{
     3, {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953}, {2.312948, 4.251926, 1.623761}};
 const OutType vec6{v6_0, v6_1, v6_2};
-//std::make_tuple(param1, vec1, "empty_system"),
+// std::make_tuple(param1, vec1, "empty_system"),
 const std::array<TestType, 5> kTestParam = {
-                                            std::make_tuple(param2, vec2, "single_equation"),
-                                            std::make_tuple(param3, vec3, "two_by_two_system"),
-                                            std::make_tuple(param4, vec4, "three_by_three_negative"),
-                                            std::make_tuple(param5, vec5, "four_by_four_fractional"),
-                                            std::make_tuple(param6, vec6, "three_by_three_negative_fractional")};
+    std::make_tuple(param2, vec2, "single_equation"), std::make_tuple(param3, vec3, "two_by_two_system"),
+    std::make_tuple(param4, vec4, "three_by_three_negative"), std::make_tuple(param5, vec5, "four_by_four_fractional"),
+    std::make_tuple(param6, vec6, "three_by_three_negative_fractional")};
 
 // не изменяется (определяет какие тесты будем запускать - сек и мпай )
 const auto kTestTasksList =
