@@ -17,31 +17,31 @@
 
 namespace savva_d_zeidel_method {
 
-std::ostream &operator<<(std::ostream &os, const TestType &test_param);
+// std::ostream &operator<<(std::ostream &os, const TestType &test_param);
 
-std::ostream &operator<<(std::ostream &os, const TestType &test_param) {
-  const auto &in = std::get<0>(test_param);
-  const auto &out = std::get<1>(test_param);
-  const auto &name = std::get<2>(test_param);
-  os << "Test[" << name << ", n=" << in.n << ", a.size=" << in.a.size() << ", b.size=" << in.b.size()
-     << ", out.size=" << out.size() << "]";
-  return os;
-}
+// std::ostream &operator<<(std::ostream &os, const TestType &test_param) {
+//   const auto &in = std::get<0>(test_param);
+//   const auto &out = std::get<1>(test_param);
+//   const auto &name = std::get<2>(test_param);
+//   os << "Test[" << name << ", n=" << in.n << ", a.size=" << in.a.size() << ", b.size=" << in.b.size()
+//      << ", out.size=" << out.size() << "]";
+//   return os;
+// }
 
 class SavvaDZeidelFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
   // тест один общий
  public:
   static std::string PrintTestParam(const TestType &test_param) {  // конструктор названия тестов
-    const auto &seidelstruct = std::get<0>(test_param);
-    const auto &name_test = std::get<2>(test_param);
+    const auto &seidelstruct = test_param.in;
+    const auto &name_test = test_param.name;
     return name_test + "_" + "matrix_size_" + std::to_string(seidelstruct.n);
   }
 
  protected:
   void SetUp() override {  // здесь данные готовятся - например читаются изображения
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = std::get<0>(params);
-    right_output_data_ = std::get<1>(params);
+    input_data_ = params.in;
+    right_output_data_ = params.out;
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
@@ -100,10 +100,11 @@ const SeidelInput param6{
     3, {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953}, {2.312948, 4.251926, 1.623761}};
 const OutType vec6{v6_0, v6_1, v6_2};
 // std::make_tuple(param1, vec1, "empty_system"),
-const std::array<TestType, 5> kTestParam = {
-    std::make_tuple(param2, vec2, "single_equation"), std::make_tuple(param3, vec3, "two_by_two_system"),
-    std::make_tuple(param4, vec4, "three_by_three_negative"), std::make_tuple(param5, vec5, "four_by_four_fractional"),
-    std::make_tuple(param6, vec6, "three_by_three_negative_fractional")};
+const std::array<TestType, 5> kTestParam = {{{param2, vec2, "single_equation"},
+                                             {param3, vec3, "two_by_two_system"},
+                                             {param4, vec4, "three_by_three_negative"},
+                                             {param5, vec5, "four_by_four_fractional"},
+                                             {param6, vec6, "three_by_three_negative_fractional"}}};
 
 // не изменяется (определяет какие тесты будем запускать - сек и мпай )
 const auto kTestTasksList =

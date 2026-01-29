@@ -16,7 +16,15 @@ struct SeidelInput {
 
 using InType = SeidelInput;
 using OutType = std::vector<double>;
-using TestType = std::tuple<SeidelInput, OutType, std::string>;
+
+struct TestParams {
+  SeidelInput in;
+  OutType out;
+  std::string name;
+};
+
+// using TestType = std::tuple<SeidelInput, OutType, std::string>;
+using TestType = TestParams;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 }  // namespace savva_d_zeidel_method
