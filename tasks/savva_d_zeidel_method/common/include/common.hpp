@@ -18,9 +18,9 @@ using InType = SeidelInput;
 using OutType = std::vector<double>;
 
 struct TestParams {
-  SeidelInput in;
-  OutType out;
-  std::string name;
+  SeidelInput in{};
+  OutType out{};
+  std::string name{};
 };
 
 // using TestType = std::tuple<SeidelInput, OutType, std::string>;
