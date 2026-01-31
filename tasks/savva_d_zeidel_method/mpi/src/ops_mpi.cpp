@@ -51,12 +51,10 @@ void SavvaDZeidelMPI::RunSeidelIterations(int n, int local_rows, int local_offse
   for (int iter = 0; iter < 1000; ++iter) {
     double local_max_error = 0.0;
 
-    // Локальный диапазон строк
     for (int i = 0; i < local_rows; ++i) {
       int index = local_offset + i;
       double result = local_data_b[i];
 
-      // Вынесенная логика с добавленным приведением типов для безопасности
       for (int j = 0; j < n; ++j) {
         if (j != index) {
           result -= local_data_a[(static_cast<size_t>(i) * n) + j] * x[j];
@@ -147,7 +145,7 @@ bool SavvaDZeidelMPI::RunImpl() {
   auto &x = GetOutput();
   x.assign(n, 0.0);
 
-  RunSeidelIterations(n, local_rows, displacements2[rank], local_data_a, local_data_b, x, counts2, displacements2);
+  RunSeidelIterations(n, local_rows, local_offset, local_data_a, local_data_b, x, counts2, displacements2);
 
   delete[] counts;
   delete[] displacements;
