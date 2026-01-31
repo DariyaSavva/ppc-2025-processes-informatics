@@ -3,7 +3,7 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <limits>
+#include <cmath>
 #include <vector>
 
 #include "savva_d_zeidel_method/common/include/common.hpp"
@@ -19,7 +19,7 @@ SavvaDZeidelMPI::SavvaDZeidelMPI(const InType &in) {
 bool SavvaDZeidelMPI::ValidationImpl() {
   const auto &in = GetInput();
 
-  if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n * in.n) || in.b.size() != static_cast<size_t>(in.n)) {
+  if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n) * in.n || in.b.size() != static_cast<size_t>(in.n)) {
     return false;
   }
 
@@ -27,10 +27,10 @@ bool SavvaDZeidelMPI::ValidationImpl() {
     double sum = 0.0;
     for (int j = 0; j < in.n; ++j) {
       if (i != j) {
-        sum += std::abs(in.a[i * in.n + j]);
+        sum += std::abs(in.a[(i * in.n) + j]);
       }
     }
-    if (std::abs(in.a[i * in.n + i]) <= sum) {
+    if (std::abs(in.a[(i * in.n) + i]) <= sum) {
       return false;
     }
   }
@@ -116,10 +116,10 @@ bool SavvaDZeidelMPI::RunImpl() {
       double result = local_data_b[i];
       for (int j = 0; j < n; ++j) {
         if (j != index) {
-          result -= local_data_a[i * n + j] * x[j];
+          result -= local_data_a[(i * n) + j] * x[j];
         }
       }
-      double x_actual = result / local_data_a[i * n + index];
+      double x_actual = result / local_data_a[(i * n) + index];
       local_max_error = std::max(local_max_error, std::abs(x_actual - x[index]));
       x[index] = x_actual;
     }

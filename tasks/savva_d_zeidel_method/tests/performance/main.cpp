@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <iostream>
+#include <cstddef>
 
 #include "savva_d_zeidel_method/common/include/common.hpp"
 #include "savva_d_zeidel_method/mpi/include/ops_mpi.hpp"

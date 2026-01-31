@@ -1,6 +1,7 @@
 #include "savva_d_zeidel_method/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <vector>
 
@@ -17,7 +18,7 @@ SavvaDZeidelSEQ::SavvaDZeidelSEQ(const InType &in) {
 bool SavvaDZeidelSEQ::ValidationImpl() {
   const auto &in = GetInput();
 
-  if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n * in.n) || in.b.size() != static_cast<size_t>(in.n)) {
+  if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n) * in.n || in.b.size() != static_cast<size_t>(in.n)) {
     return false;
   }
 
@@ -25,10 +26,10 @@ bool SavvaDZeidelSEQ::ValidationImpl() {
     double sum = 0.0;
     for (int j = 0; j < in.n; ++j) {
       if (i != j) {
-        sum += std::abs(in.a[i * in.n + j]);
+        sum += std::abs(in.a[(i * in.n) + j]);
       }
     }
-    if (std::abs(in.a[i * in.n + i]) <= sum) {
+    if (std::abs(in.a[(i * in.n) + i]) <= sum) {
       return false;
     }
   }
