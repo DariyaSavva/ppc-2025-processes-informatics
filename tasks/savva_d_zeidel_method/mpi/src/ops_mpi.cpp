@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <vector>
 
 #include "savva_d_zeidel_method/common/include/common.hpp"
@@ -19,7 +20,8 @@ SavvaDZeidelMPI::SavvaDZeidelMPI(const InType &in) {
 bool SavvaDZeidelMPI::ValidationImpl() {
   const auto &in = GetInput();
 
-  if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n) * in.n || in.b.size() != static_cast<size_t>(in.n)) {
+  if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n) * static_cast<size_t>(in.n) ||
+      in.b.size() != static_cast<size_t>(in.n)) {
     return false;
   }
 
@@ -92,8 +94,8 @@ bool SavvaDZeidelMPI::RunImpl() {
     displacements2[i] = offset2;
     offset2 += counts2[i];
   }
-
-  local_data_a = new double[counts2[rank] * n];
+  const std::size_t local_size_a = static_cast<std::size_t>(counts2[rank]) * static_cast<std::size_t>(n);
+  local_data_a = new double[local_size_a];
   local_data_b = new double[counts2[rank]];
   local_rows = counts2[rank];
   local_offset = displacements2[rank];

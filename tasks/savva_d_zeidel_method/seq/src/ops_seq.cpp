@@ -60,10 +60,10 @@ bool SavvaDZeidelSEQ::RunImpl() {
       double sum = 0.0;
       for (int j = 0; j < n; ++j) {
         if (i != j) {
-          sum += input.a[i * n + j] * x[j];
+          sum += input.a[(i * n) + j] * x[j];
         }
       }
-      double new_xi = (input.b[i] - sum) / input.a[i * n + i];
+      double new_xi = (input.b[i] - sum) / input.a[(i * n) + i];
       max_error = std::max(max_error, std::abs(new_xi - x[i]));
       x[i] = new_xi;
     }
