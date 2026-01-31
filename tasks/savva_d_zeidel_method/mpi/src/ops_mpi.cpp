@@ -45,6 +45,45 @@ bool SavvaDZeidelMPI::PreProcessingImpl() {
   return true;
 }
 
+void SavvaDZeidelMPI::RunSeidelIterations(int n, int local_rows, int local_offset, const double *local_data_a,
+                                          const double *local_data_b, std::vector<double> &x, const int *counts2,
+                                          const int *displacements2) {
+  for (int iter = 0; iter < 1000; ++iter) {
+    double local_max_error = 0.0;
+
+    // Локальный диапазон строк
+    for (int i = 0; i < local_rows; ++i) {
+      int index = local_offset + i;
+      double result = local_data_b[i];
+
+      // Вынесенная логика с добавленным приведением типов для безопасности
+      for (int j = 0; j < n; ++j) {
+        if (j != index) {
+          result -= local_data_a[(static_cast<size_t>(i) * n) + j] * x[j];
+        }
+      }
+
+      double diag_element = local_data_a[(static_cast<size_t>(i) * n) + index];
+      double x_actual = result / diag_element;
+
+      double current_diff = std::abs(x_actual - x[index]);
+      if (current_diff > local_max_error) {
+        local_max_error = current_diff;
+      }
+      x[index] = x_actual;
+    }
+
+    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, x.data(), counts2, displacements2, MPI_DOUBLE, MPI_COMM_WORLD);
+
+    double global_max_error = 0.0;
+    MPI_Allreduce(&local_max_error, &global_max_error, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+
+    if (global_max_error < 0.00001) {
+      break;
+    }
+  }
+}
+
 bool SavvaDZeidelMPI::RunImpl() {
   int rank = 0;
   int size = 0;
@@ -108,33 +147,7 @@ bool SavvaDZeidelMPI::RunImpl() {
   auto &x = GetOutput();
   x.assign(n, 0.0);
 
-  for (int iter = 0; iter < 1000; ++iter) {
-    double local_max_error = 0.0;
-
-    // локальный диапазон строк
-    for (int i = 0; i < local_rows; ++i) {
-      int index = local_offset + i;
-
-      double result = local_data_b[i];
-      for (int j = 0; j < n; ++j) {
-        if (j != index) {
-          result -= local_data_a[(i * n) + j] * x[j];
-        }
-      }
-      double x_actual = result / local_data_a[(i * n) + index];
-      local_max_error = std::max(local_max_error, std::abs(x_actual - x[index]));
-      x[index] = x_actual;
-    }
-
-    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, x.data(), counts2, displacements2, MPI_DOUBLE, MPI_COMM_WORLD);
-
-    double global_max_error = 0.0;
-    MPI_Allreduce(&local_max_error, &global_max_error, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-
-    if (global_max_error < 0.00001) {
-      break;
-    }
-  }
+  RunSeidelIterations(n, local_rows, displacements2[rank], local_data_a, local_data_b, x, counts2, displacements2);
 
   delete[] counts;
   delete[] displacements;

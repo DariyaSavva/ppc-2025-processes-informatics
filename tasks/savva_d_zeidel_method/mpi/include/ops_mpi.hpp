@@ -17,6 +17,9 @@ class SavvaDZeidelMPI : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+  void RunSeidelIterations(int n, int local_rows, int local_offset, const double *local_data_a,
+                           const double *local_data_b, std::vector<double> &x, const int *counts2,
+                           const int *displacements2);
 };
 
 }  // namespace savva_d_zeidel_method

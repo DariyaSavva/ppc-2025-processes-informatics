@@ -72,8 +72,8 @@ TEST_P(SavvaDZeidelFuncTests, MatmulFromPic) {  // не изменяется в�
   ExecuteTest(GetParam());
 }
 
-// const SeidelInput kParam1{0, {}, {}};
-// const OutType kVec1{};
+const SeidelInput kParam1{0, {}, {}};
+const OutType kVec1{};
 
 const SeidelInput kParam2{1, {2.0}, {4.0}};
 const OutType kVec2{2.0};
@@ -101,7 +101,8 @@ const SeidelInput kParam6{
     3, {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953}, {2.312948, 4.251926, 1.623761}};
 const OutType kVec6{v6_0, v6_1, v6_2};
 // std::make_tuple(param1, vec1, "empty_system"),
-const std::array<TestType, 5> kTestParam = {{{kParam2, kVec2, "single_equation"},
+const std::array<TestType, 6> kTestParam = {{{kParam1, kVec1, "empty_system"},
+                                             {kParam2, kVec2, "single_equation"},
                                              {kParam3, kVec3, "two_by_two_system"},
                                              {kParam4, kVec4, "three_by_three_negative"},
                                              {kParam5, kVec5, "four_by_four_fractional"},
