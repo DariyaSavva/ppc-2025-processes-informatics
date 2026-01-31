@@ -72,34 +72,36 @@ TEST_P(SavvaDZeidelFuncTests, MatmulFromPic) {  // не изменяется в�
   ExecuteTest(GetParam());
 }
 
-const SeidelInput kParam1{0, {}, {}};
+const SeidelInput kParam1{.n = 0, .a = {}, .b = {}};
 const OutType kVec1{};
 
-const SeidelInput kParam2{1, {2.0}, {4.0}};
+const SeidelInput kParam2{.n = 1, .a = {2.0}, .b = {4.0}};
 const OutType kVec2{2.0};
 
-const SeidelInput kParam3{2, {3.0, 1.0, 2.0, 5.0}, {5.0, 12.0}};
+const SeidelInput kParam3{.n = 2, .a = {3.0, 1.0, 2.0, 5.0}, .b = {5.0, 12.0}};
 const OutType kVec3{1.0, 2.0};
 
-const SeidelInput kParam4{3, {10.0, -1.0, 2.0, -2.0, 15.0, 3.0, 1.0, 2.0, 20.0}, {11.0, 16.0, 23.0}};
+const SeidelInput kParam4{.n = 3, .a = {10.0, -1.0, 2.0, -2.0, 15.0, 3.0, 1.0, 2.0, 20.0}, .b = {11.0, 16.0, 23.0}};
 const OutType kVec4{1.0, 1.0, 1.0};
 
-const double v5_0 = 353950.0 / 1068421.0;
-const double v5_1 = 485788.0 / 1068421.0;
-const double v5_2 = 61566.0 / 1068421.0;
-const double v5_3 = 503188.0 / 1068421.0;
+const double v50 = 353950.0 / 1068421.0;
+const double v51 = 485788.0 / 1068421.0;
+const double v52 = 61566.0 / 1068421.0;
+const double v53 = 503188.0 / 1068421.0;
 
-const SeidelInput kParam5{
-    4, {5.0, 0.5, 1.2, 0.1, 0.2, 6.0, 0.3, 0.4, 1.1, 0.2, 7.0, 0.3, 0.1, 0.4, 0.3, 8.0}, {2.0, 3.0, 1.0, 4.0}};
-const OutType kVec5{v5_0, v5_1, v5_2, v5_3};
+const SeidelInput kParam5{.n = 4,
+                          .a = {5.0, 0.5, 1.2, 0.1, 0.2, 6.0, 0.3, 0.4, 1.1, 0.2, 7.0, 0.3, 0.1, 0.4, 0.3, 8.0},
+                          .b = {2.0, 3.0, 1.0, 4.0}};
+const OutType kVec5{v50, v51, v52, v53};
 
-const double v6_0 = -3082820798382051.0 / 12480150365419456.0;
-const double v6_1 = 2481857355488935.0 / 6240075182709728.0;
-const double v6_2 = -8818834781200853.0 / 64107151648602824.0;
+const double v60 = -3082820798382051.0 / 12480150365419456.0;
+const double v61 = 2481857355488935.0 / 6240075182709728.0;
+const double v62 = -8818834781200853.0 / 64107151648602824.0;
 
-const SeidelInput kParam6{
-    3, {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953}, {2.312948, 4.251926, 1.623761}};
-const OutType kVec6{v6_0, v6_1, v6_2};
+const SeidelInput kParam6{.n = 3,
+                          .a = {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953},
+                          .b = {2.312948, 4.251926, 1.623761}};
+const OutType kVec6{v60, v61, v62};
 // std::make_tuple(param1, vec1, "empty_system"),
 const std::array<TestType, 6> kTestParam = {{{kParam1, kVec1, "empty_system"},
                                              {kParam2, kVec2, "single_equation"},

@@ -65,9 +65,7 @@ void SavvaDZeidelMPI::RunSeidelIterations(int n, int local_rows, int local_offse
       double x_actual = result / diag_element;
 
       double current_diff = std::abs(x_actual - x[index]);
-      if (current_diff > local_max_error) {
-        local_max_error = current_diff;
-      }
+      local_max_error = std::max(local_max_error, current_diff);
       x[index] = x_actual;
     }
 
