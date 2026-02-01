@@ -18,7 +18,7 @@
 
 namespace savva_d_zeidel_method {
 
-std::ostream &operator<<(std::ostream &os, const TestType &test_param);
+static std::ostream &operator<<(std::ostream &os, const TestType &test_param);
 
 std::ostream &operator<<(std::ostream &os, const TestType &test_param) {
   const auto &in = test_param.in;
@@ -84,31 +84,32 @@ const OutType kVec3{1.0, 2.0};
 const SeidelInput kParam4{.n = 3, .a = {10.0, -1.0, 2.0, -2.0, 15.0, 3.0, 1.0, 2.0, 20.0}, .b = {11.0, 16.0, 23.0}};
 const OutType kVec4{1.0, 1.0, 1.0};
 
-const double v50 = 353950.0 / 1068421.0;
-const double v51 = 485788.0 / 1068421.0;
-const double v52 = 61566.0 / 1068421.0;
-const double v53 = 503188.0 / 1068421.0;
+const double kV50 = 353950.0 / 1068421.0;
+const double kV51 = 485788.0 / 1068421.0;
+const double kV52 = 61566.0 / 1068421.0;
+const double kV53 = 503188.0 / 1068421.0;
 
 const SeidelInput kParam5{.n = 4,
                           .a = {5.0, 0.5, 1.2, 0.1, 0.2, 6.0, 0.3, 0.4, 1.1, 0.2, 7.0, 0.3, 0.1, 0.4, 0.3, 8.0},
                           .b = {2.0, 3.0, 1.0, 4.0}};
-const OutType kVec5{v50, v51, v52, v53};
+const OutType kVec5{kV50, kV51, kV52, kV53};
 
-const double v60 = -3082820798382051.0 / 12480150365419456.0;
-const double v61 = 2481857355488935.0 / 6240075182709728.0;
-const double v62 = -8818834781200853.0 / 64107151648602824.0;
-
+const double kV60 = -3082820798382051.0 / 12480150365419456.0;
+const double kV61 = 2481857355488935.0 / 6240075182709728.0;
+const double kV62 = -8818834781200853.0 / 64107151648602824.0;
+// NOLINTNEXTLINE(modernize-use-std-numbers)
 const SeidelInput kParam6{.n = 3,
                           .a = {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953},
                           .b = {2.312948, 4.251926, 1.623761}};
-const OutType kVec6{v60, v61, v62};
+const OutType kVec6{kV60, kV61, kV62};
 // std::make_tuple(param1, vec1, "empty_system"),
-const std::array<TestType, 6> kTestParam = {{{kParam1, kVec1, "empty_system"},
-                                             {kParam2, kVec2, "single_equation"},
-                                             {kParam3, kVec3, "two_by_two_system"},
-                                             {kParam4, kVec4, "three_by_three_negative"},
-                                             {kParam5, kVec5, "four_by_four_fractional"},
-                                             {kParam6, kVec6, "three_by_three_negative_fractional"}}};
+const std::array<TestType, 6> kTestParam = {
+    {{.in = kParam1, .out = kVec1, .name = "empty_system"},
+     {.in = kParam2, .out = kVec2, .name = "single_equation"},
+     {.in = kParam3, .out = kVec3, .name = "two_by_two_system"},
+     {.in = kParam4, .out = kVec4, .name = "three_by_three_negative"},
+     {.in = kParam5, .out = kVec5, .name = "four_by_four_fractional"},
+     {.in = kParam6, .out = kVec6, .name = "three_by_three_negative_fractional"}}};
 
 // не изменяется (определяет какие тесты будем запускать - сек и мпай )
 const auto kTestTasksList =

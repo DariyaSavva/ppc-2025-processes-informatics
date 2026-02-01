@@ -124,16 +124,18 @@ bool SavvaDZeidelMPI::RunImpl() {
   for (int i = 0; i < size; ++i) {
     counts[i] = (elements_per_proc + (i < remainder ? 1 : 0)) * n;
     displacements[i] = offset;
+    if (i == rank) {
+      local_offset = offset2;
+    }
     offset += counts[i];
     counts2[i] = (elements_per_proc + (i < remainder ? 1 : 0));
     displacements2[i] = offset2;
     offset2 += counts2[i];
   }
-  const std::size_t local_size_a = static_cast<std::size_t>(counts2[rank]) * static_cast<std::size_t>(n);
+  local_rows = (elements_per_proc + (rank < remainder ? 1 : 0));
+  const std::size_t local_size_a = static_cast<std::size_t>(local_rows) * static_cast<std::size_t>(n);
   local_data_a = new double[local_size_a];
-  local_data_b = new double[counts2[rank]];
-  local_rows = counts2[rank];
-  local_offset = displacements2[rank];
+  local_data_b = new double[local_rows];
 
   MPI_Scatterv(global_data_a, counts, displacements, MPI_DOUBLE, local_data_a, local_rows * n, MPI_DOUBLE, 0,
                MPI_COMM_WORLD);

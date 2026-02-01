@@ -13,52 +13,52 @@ namespace savva_d_zeidel_method {
 
 class SavvaDZeidelPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
-  InType inputData;
-  OutType rightOutputData;
+  InType input_data;
+  OutType right_output_data;
 
   void SetUp() override {
     const int n = 6000;
 
-    inputData.n = n;
-    inputData.a.assign(static_cast<std::size_t>(n) * static_cast<std::size_t>(n), 0.0);
-    inputData.b.assign(n, 0.0);
-    rightOutputData.resize(n);
+    input_data.n = n;
+    input_data.a.assign(static_cast<std::size_t>(n) * static_cast<std::size_t>(n), 0.0);
+    input_data.b.assign(n, 0.0);
+    right_output_data.resize(n);
 
     for (int i = 0; i < n; ++i) {
-      rightOutputData[i] = std::sin(0.001 * i) + 2.0;
+      right_output_data[i] = std::sin(0.001 * i) + 2.0;
     }
 
     for (int i = 0; i < n; ++i) {
       double diag_sum = 0.0;
 
       if (i > 0) {
-        inputData.a[(i * n) + (i - 1)] = -1.0;
+        input_data.a[(i * n) + (i - 1)] = -1.0;
         diag_sum += 1.0;
       }
 
       if (i < n - 1) {
-        inputData.a[(i * n) + (i + 1)] = -1.0;
+        input_data.a[(i * n) + (i + 1)] = -1.0;
         diag_sum += 1.0;
       }
 
-      inputData.a[(i * n) + i] = diag_sum + 10.0;
+      input_data.a[(i * n) + i] = diag_sum + 10.0;
     }
 
     for (int i = 0; i < n; ++i) {
       double sum = 0.0;
       for (int j = 0; j < n; ++j) {
-        sum += inputData.a[(i * n) + j] * rightOutputData[j];
+        sum += input_data.a[(i * n) + j] * right_output_data[j];
       }
-      inputData.b[i] = sum;
+      input_data.b[i] = sum;
     }
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != rightOutputData.size()) {
+    if (output_data.size() != right_output_data.size()) {
       return false;
     }
     for (size_t i = 0; i < output_data.size(); ++i) {
-      if (std::abs(output_data[i] - rightOutputData[i]) > 0.0001) {
+      if (std::abs(output_data[i] - right_output_data[i]) > 0.0001) {
         return false;
       }
     }
@@ -66,7 +66,7 @@ class SavvaDZeidelPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType>
   }
 
   InType GetTestInputData() final {
-    return inputData;
+    return input_data;
   }
 };
 
