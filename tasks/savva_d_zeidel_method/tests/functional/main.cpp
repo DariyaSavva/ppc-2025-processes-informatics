@@ -97,9 +97,11 @@ const OutType kVec5{kV50, kV51, kV52, kV53};
 const double kV60 = -3082820798382051.0 / 12480150365419456.0;
 const double kV61 = 2481857355488935.0 / 6240075182709728.0;
 const double kV62 = -8818834781200853.0 / 64107151648602824.0;
-// NOLINTNEXTLINE(modernize-use-std-numbers)
+
 const SeidelInput kParam6{.n = 3,
-                          .a = {-8.731, 0.214, -0.517, 0.421, 10.842, -0.318, -0.356, 0.419, -9.953},
+                          .a = {-8.731, 0.214, -0.517, 0.421, 10.842,
+                                -0.318,  // NOLINT(modernize-use-std-numbers)
+                                -0.356, 0.419, -9.953},
                           .b = {2.312948, 4.251926, 1.623761}};
 const OutType kVec6{kV60, kV61, kV62};
 // std::make_tuple(param1, vec1, "empty_system"),
