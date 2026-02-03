@@ -55,7 +55,7 @@ bool SavvaDConjugentGradientsSEQ::RunImpl() {
   std::vector<double> Ap(n);
 
   for (int i = 0; i < n; ++i) {
-    r[i] = input.b[i]; // r0 = b - A*x0 => так как x0=0, то r0 = b
+    r[i] = input.b[i];  // r0 = b - A*x0 => так как x0=0, то r0 = b
     p[i] = r[i];
   }
 
@@ -129,4 +129,4 @@ bool SavvaDConjugentGradientsSEQ::PostProcessingImpl() {
   return true;
 }
 
-}
+}  // namespace savva_d_conjugent_gradients

@@ -17,7 +17,7 @@ class SavvaDConjugentGradientsPerfTest : public ppc::util::BaseRunPerfTests<InTy
   OutType right_output_data;
 
   void SetUp() override {
-    const int n = 1000;
+    const int n = 3000;
 
     input_data.n = n;
     input_data.a.assign(static_cast<std::size_t>(n) * static_cast<std::size_t>(n), 0.0);
@@ -77,7 +77,8 @@ TEST_P(SavvaDConjugentGradientsPerfTest, RunPerfModes) {
 
 // Создаем список всех перф-задач (SEQ и MPI)
 const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, SavvaDConjugentGradientsMPI, SavvaDConjugentGradientsSEQ>(PPC_SETTINGS_savva_d_conjugent_gradients);
+    ppc::util::MakeAllPerfTasks<InType, SavvaDConjugentGradientsMPI, SavvaDConjugentGradientsSEQ>(
+        PPC_SETTINGS_savva_d_conjugent_gradients);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 

@@ -19,4 +19,4 @@ class SavvaDConjugentGradientsSEQ : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}
+}  // namespace savva_d_conjugent_gradients

@@ -8,7 +8,7 @@
 namespace savva_d_conjugent_gradients {
 
 struct InputSystem {
-  int n = 0;              
+  int n = 0;
   std::vector<double> a;
   std::vector<double> b;
 };
@@ -25,4 +25,4 @@ struct TestParams {
 using TestType = TestParams;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
-}
+}  // namespace savva_d_conjugent_gradients

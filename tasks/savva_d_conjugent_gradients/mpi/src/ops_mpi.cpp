@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <numeric>
 #include <vector>
 
 #include "savva_d_conjugent_gradients/common/include/common.hpp"
@@ -26,14 +27,10 @@ bool SavvaDConjugentGradientsMPI::ValidationImpl() {
   }
 
   for (int i = 0; i < in.n; ++i) {
-    double sum = 0.0;
-    for (int j = 0; j < in.n; ++j) {
-      if (i != j) {
-        sum += std::abs(in.a[(i * in.n) + j]);
+    for (int j = i + 1; j < in.n; ++j) {
+      if (std::abs(in.a[i * in.n + j] - in.a[j * in.n + i]) > 1e-9) {
+        return false;
       }
-    }
-    if (std::abs(in.a[(i * in.n) + i]) <= sum) {
-      return false;
     }
   }
 
@@ -45,37 +42,64 @@ bool SavvaDConjugentGradientsMPI::PreProcessingImpl() {
   return true;
 }
 
-void SavvaDConjugentGradientsMPI::RunSeidelIterations(int n, int local_rows, int local_offset, const double *local_data_a,
-                                          const double *local_data_b, std::vector<double> &x, const int *counts2,
-                                          const int *displacements2) {
-  for (int iter = 0; iter < 1000; ++iter) {
-    double local_max_error = 0.0;
+void SavvaDConjugentGradientsMPI::RunCGIterations(int n, int local_rows, int local_offset, std::vector<double> &r,
+                                                  const std::vector<double> &local_a, std::vector<double> &vector_x,
+                                                  const std::vector<int> &counts, const std::vector<int> &displs) {
+  // Константы
+  const int max_iter = 1000;
+  const double eps = 1e-9;
 
-    for (int i = 0; i < local_rows; ++i) {
-      int index = local_offset + i;
-      double result = local_data_b[i];
+  std::vector<double> p(n, 0.0);
+  p = r;
+  std::vector<double> global_Ap(n, 0.0);
+  std::vector<double> local_Ap(local_rows, 0.0);
 
-      for (int j = 0; j < n; ++j) {
-        if (j != index) {
-          result -= local_data_a[(static_cast<size_t>(i) * n) + j] * x[j];
-        }
-      }
+  double rr_old = std::inner_product(r.begin(), r.end(), r.begin(), 0.0);
 
-      double diag_element = local_data_a[(static_cast<size_t>(i) * n) + index];
-      double x_actual = result / diag_element;
-
-      double current_diff = std::abs(x_actual - x[index]);
-      local_max_error = std::max(local_max_error, current_diff);
-      x[index] = x_actual;
+  for (int iter = 0; iter < max_iter; ++iter) {
+    if (std::sqrt(rr_old) < eps) {
+      break;
     }
 
-    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, x.data(), counts2, displacements2, MPI_DOUBLE, MPI_COMM_WORLD);
+    // A_local * p
 
-    double global_max_error = 0.0;
-    MPI_Allreduce(&local_max_error, &global_max_error, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    for (int i = 0; i < local_rows; ++i) {
+      double sum = 0.0;
+      for (int j = 0; j < n; ++j) {
+        sum += local_a[(i * n) + j] * p[j];
+      }
+      local_Ap[i] = sum;
+    }
 
-    if (global_max_error < 0.00001) {
+    // собираем глобальный Ap
+    std::fill(global_Ap.begin(), global_Ap.end(), 0.0);
+    for (int i = 0; i < local_rows; ++i) {
+      global_Ap[local_offset + i] = local_Ap[i];
+    }
+    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, global_Ap.data(), counts.data(), displs.data(), MPI_DOUBLE,
+                   MPI_COMM_WORLD);
+
+    double pAp = std::inner_product(p.begin(), p.end(), global_Ap.begin(), 0.0);
+
+    if (std::abs(pAp) < eps) {
       break;
+    }
+
+    double alpha = rr_old / pAp;
+
+    for (int i = 0; i < n; ++i) {
+      vector_x[i] += alpha * p[i];
+      r[i] -= alpha * global_Ap[i];
+    }
+
+    double rr_new = std::inner_product(r.begin(), r.end(), r.begin(), 0.0);
+
+    double beta = rr_new / rr_old;
+
+    rr_old = rr_new;
+
+    for (int i = 0; i < n; ++i) {
+      p[i] = r[i] + beta * p[i];
     }
   }
 }
@@ -85,76 +109,64 @@ bool SavvaDConjugentGradientsMPI::RunImpl() {
   int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-  int local_offset = 0;
-  int local_rows = 0;
-  double *local_data_a = nullptr;
-  double *local_data_b = nullptr;
-  double *global_data_a = nullptr;
-  double *global_data_b = nullptr;
-  int *counts = new int[size]();
-  int *displacements = new int[size]();
-  int *counts2 = new int[size]();
-  int *displacements2 = new int[size]();
+  const double *sendbuf_a = nullptr;  // будут ненулевыми только на 0 процессе
 
   int n = 0;
-
   if (rank == 0) {
     n = GetInput().n;
-    global_data_a = GetInput().a.data();
-    global_data_b = GetInput().b.data();
+  }
+  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  std::vector<double> r(n, 0.0);
+
+  if (rank == 0) {
+    sendbuf_a = GetInput().a.data();
+    const auto &full_b = GetInput().b;
+    std::copy(full_b.begin(), full_b.end(), r.begin());
   }
 
-  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(r.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
   if (n == 0) {
-    delete[] counts;
-    delete[] displacements;
-    delete[] counts2;
-    delete[] displacements2;
-    auto &x = GetOutput();
-    x = std::vector<double>{};
     return true;
   }
 
-  int elements_per_proc = n / size;
+  std::vector<int> counts(size);
+  std::vector<int> displs(size);
+  std::vector<int> counts_a(size);
+  std::vector<int> displs_a(size);
+
+  int rows_per_proc = n / size;
   int remainder = n % size;
   int offset = 0;
-  int offset2 = 0;
+  int local_rows = 0;
+  int local_offset = 0;
 
   for (int i = 0; i < size; ++i) {
-    counts[i] = (elements_per_proc + (i < remainder ? 1 : 0)) * n;
-    displacements[i] = offset;
-    if (i == rank) {
-      local_offset = offset2;
-    }
+    counts[i] = rows_per_proc + (i < remainder ? 1 : 0);
+    displs[i] = offset;
+    counts_a[i] = counts[i] * n;
+    displs_a[i] = displs[i] * n;
     offset += counts[i];
-    counts2[i] = (elements_per_proc + (i < remainder ? 1 : 0));
-    displacements2[i] = offset2;
-    offset2 += counts2[i];
-  }
-  local_rows = (elements_per_proc + (rank < remainder ? 1 : 0));
-  const std::size_t local_size_a = static_cast<std::size_t>(local_rows) * static_cast<std::size_t>(n);
-  local_data_a = new double[local_size_a];
-  local_data_b = new double[local_rows];
 
-  MPI_Scatterv(global_data_a, counts, displacements, MPI_DOUBLE, local_data_a, local_rows * n, MPI_DOUBLE, 0,
-               MPI_COMM_WORLD);
-  MPI_Scatterv(global_data_b, counts2, displacements2, MPI_DOUBLE, local_data_b, local_rows, MPI_DOUBLE, 0,
+    if (i == rank) {
+      local_offset = displs[rank];
+      local_rows = counts[rank];
+    }
+  }
+
+  // Выделение памяти под локальные данные
+
+  std::vector<double> local_a(local_rows * n);
+
+  // Рассылка данных
+  MPI_Scatterv(sendbuf_a, counts_a.data(), displs_a.data(), MPI_DOUBLE, local_a.data(), local_rows * n, MPI_DOUBLE, 0,
                MPI_COMM_WORLD);
 
   auto &x = GetOutput();
   x.assign(n, 0.0);
+  // Запуск алгоритма
+  RunCGIterations(n, local_rows, local_offset, r, local_a, x, counts, displs);
 
-  RunSeidelIterations(n, local_rows, local_offset, local_data_a, local_data_b, x, counts2, displacements2);
-
-  delete[] counts;
-  delete[] displacements;
-  delete[] counts2;
-  delete[] displacements2;
-  delete[] local_data_a;
-  delete[] local_data_b;
-
-  MPI_Barrier(MPI_COMM_WORLD);
   return true;
 }
 
@@ -162,4 +174,4 @@ bool SavvaDConjugentGradientsMPI::PostProcessingImpl() {
   return true;
 }
 
-}  // namespace savva_d_ConjugentGradients_method
+}  // namespace savva_d_conjugent_gradients

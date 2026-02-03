@@ -68,7 +68,8 @@ class SavvaDConjugentGradientsFuncTests : public ppc::util::BaseRunFuncTests<InT
 
 namespace {
 // реализация (но пока не запуск) тестов
-TEST_P(SavvaDConjugentGradientsFuncTests, MatmulFromPic) {  // не изменяется во всех задачах - генерация теста с параметрами
+TEST_P(SavvaDConjugentGradientsFuncTests,
+       MatmulFromPic) {  // не изменяется во всех задачах - генерация теста с параметрами
   ExecuteTest(GetParam());
 }
 
@@ -89,38 +90,34 @@ const double kV51 = 925413.0 / 17119448.0;
 const double kV52 = 353133.0 / 17119448.0;
 const double kV53 = 2896595.0 / 17119448.0;
 
-const InputSystem kParam5{.n = 4,
-                          .a = {99.0, -6.0, 5.0, 2.0, -6.0, 50.0, 11.0, 7.0, 5.0, 11.0, 112.0, 0.0, 2.0, 7.0, 0.0, 33.0},
-                          .b = {2.0, 4.0, 3.0, 6.0}};
+const InputSystem kParam5{
+    .n = 4,
+    .a = {99.0, -6.0, 5.0, 2.0, -6.0, 50.0, 11.0, 7.0, 5.0, 11.0, 112.0, 0.0, 2.0, 7.0, 0.0, 33.0},
+    .b = {2.0, 4.0, 3.0, 6.0}};
 const OutType kVec5{kV50, kV51, kV52, kV53};
 
 const double kV60 = 200359.0 / 3581592.0;
 const double kV61 = 21711.0 / 298466.0;
 const double kV62 = 110773.0 / 596932.0;
 
-const InputSystem kParam6{.n = 3,
-                          .a = {15.6, 0.0, -1.2, 0.0, 17.9,
-                                -5.4,
-                                -1.2, -5.4, 40.2},
-                          .b = {0.65, 0.3, 7.0}};
+const InputSystem kParam6{.n = 3, .a = {15.6, 0.0, -1.2, 0.0, 17.9, -5.4, -1.2, -5.4, 40.2}, .b = {0.65, 0.3, 7.0}};
 const OutType kVec6{kV60, kV61, kV62};
 
-const InputSystem kParam7{.n = 3, .a = {3.0, 1.0, 0.0, 1.0, 4.0, 2.0, 0.0, 2.0, 5.0}, .b = {0.0, 0.0,0.0}};
+const InputSystem kParam7{.n = 3, .a = {3.0, 1.0, 0.0, 1.0, 4.0, 2.0, 0.0, 2.0, 5.0}, .b = {0.0, 0.0, 0.0}};
 const OutType kVec7{0.0, 0.0, 0.0};
 
-const std::array<TestType, 7> kTestParam = {
-    {{.in = kParam1, .out = kVec1, .name = "empty_system"},
-     {.in = kParam2, .out = kVec2, .name = "single_equation"},
-     {.in = kParam3, .out = kVec3, .name = "two_by_two_system"},
-     {.in = kParam4, .out = kVec4, .name = "three_by_three_system"},
-     {.in = kParam5, .out = kVec5, .name = "foo_by_foo_systame"},
-     {.in = kParam6, .out = kVec6, .name = "float_system"},
-     {.in = kParam7, .out = kVec7, .name = "null_execute"}}};
+const std::array<TestType, 7> kTestParam = {{{.in = kParam1, .out = kVec1, .name = "empty_system"},
+                                             {.in = kParam2, .out = kVec2, .name = "single_equation"},
+                                             {.in = kParam3, .out = kVec3, .name = "two_by_two_system"},
+                                             {.in = kParam4, .out = kVec4, .name = "three_by_three_system"},
+                                             {.in = kParam5, .out = kVec5, .name = "foo_by_foo_systame"},
+                                             {.in = kParam6, .out = kVec6, .name = "float_system"},
+                                             {.in = kParam7, .out = kVec7, .name = "null_execute"}}};
 
 // не изменяется (определяет какие тесты будем запускать - сек и мпай )
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<SavvaDConjugentGradientsSEQ, InType>(kTestParam, PPC_SETTINGS_savva_d_conjugent_gradients),
-                   ppc::util::AddFuncTask<SavvaDConjugentGradientsMPI, InType>(kTestParam, PPC_SETTINGS_savva_d_conjugent_gradients));
+const auto kTestTasksList = std::tuple_cat(
+    ppc::util::AddFuncTask<SavvaDConjugentGradientsSEQ, InType>(kTestParam, PPC_SETTINGS_savva_d_conjugent_gradients),
+    ppc::util::AddFuncTask<SavvaDConjugentGradientsMPI, InType>(kTestParam, PPC_SETTINGS_savva_d_conjugent_gradients));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
@@ -131,4 +128,4 @@ INSTANTIATE_TEST_SUITE_P(PicMatrixTests, SavvaDConjugentGradientsFuncTests, kGte
 
 }  // namespace
 
-}  // namespace savva_d_ConjugentGradients_method
+}  // namespace savva_d_conjugent_gradients

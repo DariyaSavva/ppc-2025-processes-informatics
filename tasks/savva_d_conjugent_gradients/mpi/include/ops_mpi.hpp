@@ -19,9 +19,9 @@ class SavvaDConjugentGradientsMPI : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
-  static void RunSeidelIterations(int n, int local_rows, int local_offset, const double *local_data_a,
-                                  const double *local_data_b, std::vector<double> &x, const int *counts2,
-                                  const int *displacements2);
+  static void RunCGIterations(int n, int local_rows, int local_offset, std::vector<double> &r,
+                              const std::vector<double> &local_a, std::vector<double> &local_x,
+                              const std::vector<int> &counts, const std::vector<int> &displs);
 };
 
-}  // namespace savva_d_zeidel_method
+}  // namespace savva_d_conjugent_gradients
