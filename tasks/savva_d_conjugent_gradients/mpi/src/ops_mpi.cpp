@@ -1,4 +1,4 @@
-#include "savva_d_zeidel_method/mpi/include/ops_mpi.hpp"
+#include "savva_d_conjugent_gradients/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
 
@@ -7,17 +7,17 @@
 #include <cstddef>
 #include <vector>
 
-#include "savva_d_zeidel_method/common/include/common.hpp"
+#include "savva_d_conjugent_gradients/common/include/common.hpp"
 
-namespace savva_d_zeidel_method {
+namespace savva_d_conjugent_gradients {
 
-SavvaDZeidelMPI::SavvaDZeidelMPI(const InType &in) {
+SavvaDConjugentGradientsMPI::SavvaDConjugentGradientsMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<double>{};
 }
 
-bool SavvaDZeidelMPI::ValidationImpl() {
+bool SavvaDConjugentGradientsMPI::ValidationImpl() {
   const auto &in = GetInput();
 
   if (in.n < 0 || in.a.size() != static_cast<size_t>(in.n) * static_cast<size_t>(in.n) ||
@@ -40,12 +40,12 @@ bool SavvaDZeidelMPI::ValidationImpl() {
   return true;
 }
 
-bool SavvaDZeidelMPI::PreProcessingImpl() {
+bool SavvaDConjugentGradientsMPI::PreProcessingImpl() {
   GetOutput().assign(GetInput().n, 0.0);
   return true;
 }
 
-void SavvaDZeidelMPI::RunSeidelIterations(int n, int local_rows, int local_offset, const double *local_data_a,
+void SavvaDConjugentGradientsMPI::RunSeidelIterations(int n, int local_rows, int local_offset, const double *local_data_a,
                                           const double *local_data_b, std::vector<double> &x, const int *counts2,
                                           const int *displacements2) {
   for (int iter = 0; iter < 1000; ++iter) {
@@ -80,7 +80,7 @@ void SavvaDZeidelMPI::RunSeidelIterations(int n, int local_rows, int local_offse
   }
 }
 
-bool SavvaDZeidelMPI::RunImpl() {
+bool SavvaDConjugentGradientsMPI::RunImpl() {
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -158,8 +158,8 @@ bool SavvaDZeidelMPI::RunImpl() {
   return true;
 }
 
-bool SavvaDZeidelMPI::PostProcessingImpl() {
+bool SavvaDConjugentGradientsMPI::PostProcessingImpl() {
   return true;
 }
 
-}  // namespace savva_d_zeidel_method
+}  // namespace savva_d_ConjugentGradients_method

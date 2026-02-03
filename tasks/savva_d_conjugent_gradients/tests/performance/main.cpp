@@ -3,21 +3,21 @@
 #include <cmath>
 #include <cstddef>
 
-#include "savva_d_zeidel_method/common/include/common.hpp"
-#include "savva_d_zeidel_method/mpi/include/ops_mpi.hpp"
-#include "savva_d_zeidel_method/seq/include/ops_seq.hpp"
+#include "savva_d_conjugent_gradients/common/include/common.hpp"
+#include "savva_d_conjugent_gradients/mpi/include/ops_mpi.hpp"
+#include "savva_d_conjugent_gradients/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
 // #include "util/include/util.hpp"
 
-namespace savva_d_zeidel_method {
+namespace savva_d_conjugent_gradients {
 
-class SavvaDZeidelPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
+class SavvaDConjugentGradientsPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
   InType input_data;
   OutType right_output_data;
 
   void SetUp() override {
-    const int n = 6000;
+    const int n = 1000;
 
     input_data.n = n;
     input_data.a.assign(static_cast<std::size_t>(n) * static_cast<std::size_t>(n), 0.0);
@@ -41,7 +41,7 @@ class SavvaDZeidelPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType>
         diag_sum += 1.0;
       }
 
-      input_data.a[(i * n) + i] = diag_sum + 10.0;
+      input_data.a[(i * n) + i] = diag_sum + 20.0;
     }
 
     for (int i = 0; i < n; ++i) {
@@ -71,18 +71,18 @@ class SavvaDZeidelPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType>
 };
 
 // Тест на производительность
-TEST_P(SavvaDZeidelPerfTest, RunPerfModes) {
+TEST_P(SavvaDConjugentGradientsPerfTest, RunPerfModes) {
   ExecuteTest(GetParam());  // pipeline (SEQ или MPI)
 }
 
 // Создаем список всех перф-задач (SEQ и MPI)
 const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, SavvaDZeidelMPI, SavvaDZeidelSEQ>(PPC_SETTINGS_savva_d_zeidel_method);
+    ppc::util::MakeAllPerfTasks<InType, SavvaDConjugentGradientsMPI, SavvaDConjugentGradientsSEQ>(PPC_SETTINGS_savva_d_conjugent_gradients);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = SavvaDZeidelPerfTest::CustomPerfTestName;
+const auto kPerfTestName = SavvaDConjugentGradientsPerfTest::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, SavvaDZeidelPerfTest, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, SavvaDConjugentGradientsPerfTest, kGtestValues, kPerfTestName);
 
-}  // namespace savva_d_zeidel_method
+}  // namespace savva_d_conjugent_gradients

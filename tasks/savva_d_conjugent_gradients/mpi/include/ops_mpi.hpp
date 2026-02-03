@@ -2,17 +2,17 @@
 
 #include <vector>
 
-#include "savva_d_zeidel_method/common/include/common.hpp"
+#include "savva_d_conjugent_gradients/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace savva_d_zeidel_method {
+namespace savva_d_conjugent_gradients {
 
-class SavvaDZeidelMPI : public BaseTask {
+class SavvaDConjugentGradientsMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit SavvaDZeidelMPI(const InType &in);
+  explicit SavvaDConjugentGradientsMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;

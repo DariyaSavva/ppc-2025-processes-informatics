@@ -1,16 +1,16 @@
 #pragma once
 
-#include "savva_d_zeidel_method/common/include/common.hpp"
+#include "savva_d_conjugent_gradients/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace savva_d_zeidel_method {
+namespace savva_d_conjugent_gradients {
 
-class SavvaDZeidelSEQ : public BaseTask {
+class SavvaDConjugentGradientsSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit SavvaDZeidelSEQ(const InType &in);
+  explicit SavvaDConjugentGradientsSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -19,4 +19,4 @@ class SavvaDZeidelSEQ : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}  // namespace savva_d_zeidel_method
+}
