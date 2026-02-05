@@ -28,7 +28,7 @@ bool SavvaDConjugentGradientsMPI::ValidationImpl() {
 
   for (int i = 0; i < in.n; ++i) {
     for (int j = i + 1; j < in.n; ++j) {
-      if (std::abs(in.a[i * in.n + j] - in.a[j * in.n + i]) > 1e-9) {
+      if (std::abs(in.a[(i * in.n) + j] - in.a[(j * in.n) + i]) > 1e-9) {
         return false;
       }
     }
