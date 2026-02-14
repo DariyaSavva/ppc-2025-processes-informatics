@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-#include <algorithm>
+// #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <numeric>
@@ -42,6 +42,28 @@ bool SavvaDConjugentGradientsMPI::PreProcessingImpl() {
   return true;
 }
 
+std::vector<double> SavvaDConjugentGradientsMPI::ComputeLocalAp(int n, int local_rows,
+                                                                const std::vector<double> &local_a,
+                                                                const std::vector<double> &p) {
+  std::vector<double> local_ap(local_rows, 0.0);
+  for (int i = 0; i < local_rows; ++i) {
+    double sum = 0.0;
+    for (int j = 0; j < n; ++j) {
+      sum += local_a[(i * n) + j] * p[j];
+    }
+    local_ap[i] = sum;
+  }
+  return local_ap;
+}
+
+void SavvaDConjugentGradientsMPI::UpdateXR(std::vector<double> &x, std::vector<double> &r, const std::vector<double> &p,
+                                           const std::vector<double> &global_ap, double alpha, int n) {
+  for (int i = 0; i < n; ++i) {
+    x[i] += alpha * p[i];
+    r[i] -= alpha * global_ap[i];
+  }
+}
+
 void SavvaDConjugentGradientsMPI::RunCGIterations(int n, int local_rows, int local_offset, std::vector<double> &r,
                                                   const std::vector<double> &local_a, std::vector<double> &vector_x,
                                                   const std::vector<int> &counts, const std::vector<int> &displs) {
@@ -51,8 +73,8 @@ void SavvaDConjugentGradientsMPI::RunCGIterations(int n, int local_rows, int loc
 
   std::vector<double> p(n, 0.0);
   p = r;
-  std::vector<double> global_Ap(n, 0.0);
-  std::vector<double> local_Ap(local_rows, 0.0);
+  std::vector<double> global_ap(n, 0.0);
+  // std::vector<double> local_ap(local_rows, 0.0);
 
   double rr_old = std::inner_product(r.begin(), r.end(), r.begin(), 0.0);
 
@@ -63,34 +85,25 @@ void SavvaDConjugentGradientsMPI::RunCGIterations(int n, int local_rows, int loc
 
     // A_local * p
 
-    for (int i = 0; i < local_rows; ++i) {
-      double sum = 0.0;
-      for (int j = 0; j < n; ++j) {
-        sum += local_a[(i * n) + j] * p[j];
-      }
-      local_Ap[i] = sum;
-    }
+    std::vector<double> local_ap = ComputeLocalAp(n, local_rows, local_a, p);
 
-    // собираем глобальный Ap
-    std::fill(global_Ap.begin(), global_Ap.end(), 0.0);
+    // собираем глобальный ap
+    std::ranges::fill(global_ap, 0.0);
     for (int i = 0; i < local_rows; ++i) {
-      global_Ap[local_offset + i] = local_Ap[i];
+      global_ap[local_offset + i] = local_ap[i];
     }
-    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, global_Ap.data(), counts.data(), displs.data(), MPI_DOUBLE,
+    MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, global_ap.data(), counts.data(), displs.data(), MPI_DOUBLE,
                    MPI_COMM_WORLD);
 
-    double pAp = std::inner_product(p.begin(), p.end(), global_Ap.begin(), 0.0);
+    double p_ap = std::inner_product(p.begin(), p.end(), global_ap.begin(), 0.0);
 
-    if (std::abs(pAp) < eps) {
+    if (std::abs(p_ap) < eps) {
       break;
     }
 
-    double alpha = rr_old / pAp;
+    double alpha = rr_old / p_ap;
 
-    for (int i = 0; i < n; ++i) {
-      vector_x[i] += alpha * p[i];
-      r[i] -= alpha * global_Ap[i];
-    }
+    UpdateXR(vector_x, r, p, global_ap, alpha, n);
 
     double rr_new = std::inner_product(r.begin(), r.end(), r.begin(), 0.0);
 
@@ -99,7 +112,7 @@ void SavvaDConjugentGradientsMPI::RunCGIterations(int n, int local_rows, int loc
     rr_old = rr_new;
 
     for (int i = 0; i < n; ++i) {
-      p[i] = r[i] + beta * p[i];
+      p[i] = r[i] + (beta * p[i]);
     }
   }
 }
@@ -121,7 +134,7 @@ bool SavvaDConjugentGradientsMPI::RunImpl() {
   if (rank == 0) {
     sendbuf_a = GetInput().a.data();
     const auto &full_b = GetInput().b;
-    std::copy(full_b.begin(), full_b.end(), r.begin());
+    std::ranges::copy(full_b, r.begin());
   }
 
   MPI_Bcast(r.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -156,7 +169,7 @@ bool SavvaDConjugentGradientsMPI::RunImpl() {
 
   // Выделение памяти под локальные данные
 
-  std::vector<double> local_a(local_rows * n);
+  std::vector<double> local_a(static_cast<size_t>(local_rows) * static_cast<size_t>(n));
 
   // Рассылка данных
   MPI_Scatterv(sendbuf_a, counts_a.data(), displs_a.data(), MPI_DOUBLE, local_a.data(), local_rows * n, MPI_DOUBLE, 0,

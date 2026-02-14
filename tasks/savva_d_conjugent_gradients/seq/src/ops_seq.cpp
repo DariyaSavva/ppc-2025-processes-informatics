@@ -1,6 +1,6 @@
 #include "savva_d_conjugent_gradients/seq/include/ops_seq.hpp"
 
-#include <algorithm>
+// #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <vector>
@@ -38,6 +38,31 @@ bool SavvaDConjugentGradientsSEQ::PreProcessingImpl() {
   return true;
 }
 
+void SavvaDConjugentGradientsSEQ::ComputeAp(const std::vector<double> &a, const std::vector<double> &p,
+                                            std::vector<double> &ap, int n) {
+  for (int i = 0; i < n; ++i) {
+    double sum = 0.0;
+    for (int j = 0; j < n; ++j) {
+      sum += a[(i * n) + j] * p[j];
+    }
+    ap[i] = sum;
+  }
+}
+
+void SavvaDConjugentGradientsSEQ::UpdateXR(std::vector<double> &x, std::vector<double> &r, const std::vector<double> &p,
+                                           const std::vector<double> &ap, double alpha, int n) {
+  for (int i = 0; i < n; ++i) {
+    x[i] += alpha * p[i];
+    r[i] -= alpha * ap[i];
+  }
+}
+
+void SavvaDConjugentGradientsSEQ::UpdateP(std::vector<double> &p, const std::vector<double> &r, double beta, int n) {
+  for (int i = 0; i < n; ++i) {
+    p[i] = r[i] + (beta * p[i]);
+  }
+}
+
 bool SavvaDConjugentGradientsSEQ::RunImpl() {
   const auto &input = GetInput();
   auto &x = GetOutput();
@@ -52,7 +77,7 @@ bool SavvaDConjugentGradientsSEQ::RunImpl() {
 
   std::vector<double> r(n);
   std::vector<double> p(n);
-  std::vector<double> Ap(n);
+  std::vector<double> ap(n);
 
   for (int i = 0; i < n; ++i) {
     r[i] = input.b[i];  // r0 = b - A*x0 => так как x0=0, то r0 = b
@@ -70,35 +95,26 @@ bool SavvaDConjugentGradientsSEQ::RunImpl() {
       break;
     }
 
-    // 2.1 Вычисление Ap = A * p
-    for (int i = 0; i < n; ++i) {
-      double sum = 0.0;
-      for (int j = 0; j < n; ++j) {
-        sum += input.a[(i * n) + j] * p[j];
-      }
-      Ap[i] = sum;
-    }
+    // 2.1 Вычисление ap = A * p
+    ComputeAp(input.a, p, ap, n);
 
     // 2.2 Вычисление alpha = (r^T * r) / (p^T * A * p)
-    // Знаменатель p^T * Ap
-    double pAp = 0.0;
+    // Знаменатель p^T * ap
+    double p_ap = 0.0;
     for (int i = 0; i < n; ++i) {
-      pAp += p[i] * Ap[i];
+      p_ap += p[i] * ap[i];
     }
 
     // Защита от деления на ноль (если матрица не положительно определена)
-    if (std::abs(pAp) < 1e-15) {
+    if (std::abs(p_ap) < 1e-15) {
       return false;
     }
 
-    double alpha = rs_old / pAp;
+    double alpha = rs_old / p_ap;
 
     // 2.3 x = x + alpha * p
-    // 2.4 r = r - alpha * Ap
-    for (int i = 0; i < n; ++i) {
-      x[i] += alpha * p[i];
-      r[i] -= alpha * Ap[i];
-    }
+    // 2.4 r = r - alpha * ap
+    UpdateXR(x, r, p, ap, alpha, n);
 
     // Вычисление новой невязки r^T * r (для следующего шага и проверки)
     double rs_new = 0.0;
@@ -115,9 +131,7 @@ bool SavvaDConjugentGradientsSEQ::RunImpl() {
     double beta = rs_new / rs_old;
 
     // 2.6 p = r + beta * p
-    for (int i = 0; i < n; ++i) {
-      p[i] = r[i] + beta * p[i];
-    }
+    UpdateP(p, r, beta, n);
 
     rs_old = rs_new;
   }
