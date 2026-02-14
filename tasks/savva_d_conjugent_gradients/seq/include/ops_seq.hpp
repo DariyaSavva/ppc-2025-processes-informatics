@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "savva_d_conjugent_gradients/common/include/common.hpp"
 #include "task/include/task.hpp"
 

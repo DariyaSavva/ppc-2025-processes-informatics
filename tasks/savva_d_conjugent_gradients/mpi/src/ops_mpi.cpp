@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <numeric>
+#include <ranges>
 #include <vector>
 
 #include "savva_d_conjugent_gradients/common/include/common.hpp"
