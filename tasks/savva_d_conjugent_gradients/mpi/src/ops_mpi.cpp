@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-// #include <algorithm>
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <numeric>
